@@ -41,7 +41,8 @@ public class Mediainfo {
     public Duration determineVideoDuration(File file) {
         String result = "";
         try {
-            String command = format("\"%s\" --Output=\"Video;%%Duration%%\" %s", executable, file.getAbsolutePath());
+            // String command = format("%s --Output=\"Video;%%Duration%%\" \"%s\"", executable, file.getAbsolutePath());
+            String[] command = new String[] { executable + "-duration", file.getAbsolutePath() };
             result = executeCommand(command);
             return new Duration(parseLong(result));
         } catch (NumberFormatException exception) {
@@ -50,11 +51,11 @@ public class Mediainfo {
         }
     }
 
-    Process createProcess(String command) throws IOException {
+    Process createProcess(String[] command) throws IOException {
         return getRuntime().exec(command);
     }
 
-    String executeCommand(String command) {
+    String executeCommand(String[] command) {
         Process process;
         try {
             process = createProcess(command);
@@ -62,7 +63,7 @@ public class Mediainfo {
             if (exitCode == 0) {
                 return new BufferedReader(new InputStreamReader(process.getInputStream())).readLine();
             } else {
-                LOG.warn(format("receivced an exit code different than 0 : %d", exitCode));
+                LOG.warn(format("command '%s' returned an exit code different than 0 : %d", command, exitCode));
                 return null;
             }
         } catch (InterruptedException | IOException exception) {
